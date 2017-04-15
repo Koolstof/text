@@ -1,0 +1,60 @@
+Disable Consul for GateWay : 
+
+
+//@EnableDiscoveryClient
+
+
+
+MicroserviceSecurityConfiguration.java
+
+    @Inject
+    private RouteLocator routeLocator;
+    
+    @Bean
+    public RestTemplate loadBalancedRestTemplate(RestTemplateCustomizer customizer) {
+        RestTemplate restTemplate = new RestTemplate();
+        //customizer.customize(restTemplate);
+        return restTemplate;
+    }
+
+    @Inject
+    @Qualifier("loadBalancedRestTemplate")
+    private RestTemplate keyUriRestTemplate;
+
+    private String getKeyFromAuthorizationServer() {
+        // Load available UAA servers
+        //discoveryClient.getServices();
+        String uaaLocation = routeLocator.getMatchingRoute("/uaa").getLocation();
+        HttpEntity<Void> request = new HttpEntity<Void>(new HttpHeaders());
+        return (String) this.keyUriRestTemplate
+            .exchange(uaaLocation+"/oauth/token_key", HttpMethod.GET, request, Map.class).getBody()
+            .get("value");
+
+    }
+    
+    
+    
+application.yml : 
+
+zuul:
+    routes:
+        uaa:
+            path: /uaa/**
+            url: http://localhost:9999/
+        microservice:
+            path: /microservice/**
+            url: http://localhost:8083/
+            
+
+bootstrap.yml : 
+
+spring:
+    cloud:
+        consul:
+            enabled: false
+            discovery:
+                enabled: false
+                instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+            config:
+                enabled: false
+
