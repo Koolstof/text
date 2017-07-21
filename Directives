@@ -1,0 +1,79 @@
+var app = angular.module('main-module',[])
+
+app.controller('MainController', function($scope){
+  $scope.myValue = 'test value';
+  $scope.parentToggle = function(value){
+    console.log(value);
+    $scope.myValue = value;
+  };
+  
+  $scope.getRefDate = function(type){
+    console.log(type);
+    return type === 'pano' ? 'pano-date':'nav-date';  
+  };
+  
+});
+
+app.directive('graphexpo', function(){
+    return {
+            restrict: 'EA',
+            template: '<a ng-click="f()">Click Me</a>',
+            replace: true,
+            scope: {
+                refdate: '&'
+            },
+            controller: function($scope) {
+                $scope.f = function() {
+                  var date = $scope.refdate({type: 'pano'});
+                  console.log('date got from parent : '+date);
+                };
+            }
+        };
+});
+
+app.directive('graphnav', function(){
+    return {
+            restrict: 'EA',
+            template: '<a ng-click="f()">Click Me</a>',
+            replace: true,
+            scope: {
+                refdate: '&'
+            },
+            controller: function($scope) {
+                $scope.f = function() {
+                  var date = $scope.refdate({type: 'nav'});
+                  console.log('date got from parent : '+date);
+                };
+            }
+        };
+});
+
+
+
+
+
+
+
+<!DOCTYPE html>
+<html ng-app="main-module">
+
+<head>
+  <script data-require="angular.js@*" data-semver="1.3.0-beta.5" src="https://code.angularjs.org/1.3.0-beta.5/angular.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <script src="script.js"></script>
+</head>
+
+<body>
+  <div ng-controller="MainController">
+    <p>
+      {{myValue}}
+    </p>
+    
+    <br>Pano <graphexpo refdate="getRefDate(type)"></graphexpo>
+    
+    <br>Nav <graphnav refdate="getRefDate(type)"></graphnav>
+  </div>
+
+</body>
+
+</html>
